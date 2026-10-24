@@ -1,13 +1,15 @@
-import type { KEYS, NeverKeysFilterType } from "./types.js";
+import type { KEYS } from "./types.js";
 
 //...
 
 export type AnyUnitDefinition = UnitDefinition<any, any>;
 
+type ScalarMemberKeys<T> = unknown extends T ? KEYS<T> : NotCompositeKeys<T>;
+
 export interface IUnitCompositeStep<Definition extends AnyUnitDefinition = AnyUnitDefinition> {
 	def: Definition;
-	prev: (v: number, key: KEYS<Definition["__type_config"]>) => number;
-	next: (v: number, key: KEYS<Definition["__type_config"]>) => number;
+	prev: (v: number, key: ScalarMemberKeys<Definition["__type_config"]>) => number;
+	next: (v: number, key: ScalarMemberKeys<Definition["__type_config"]>) => number;
 }
 
 export interface IUnitCompositePrototype<Steps extends IUnitCompositeStep<any>[] = IUnitCompositeStep<any>[]> {
@@ -27,23 +29,24 @@ export type IUnitPrototype = IUnitScalarPrototype | IUnitCompositePrototype;
 
 export type isCompositePrototypeType<T> = T extends IUnitCompositePrototype<any> ? true : false;
 
-export type CompositeKeys<T> = { [K in keyof T]: isCompositePrototypeType<T[K]> extends true ? K : never }[keyof T];
+export type CompositeKeys<T> = { [K in keyof T]: isCompositePrototypeType<T[K]> extends true ? K : never }[keyof T] & KEYS<T>;
 
-export type NotCompositeKeys<T> = { [K in keyof T]: isCompositePrototypeType<T[K]> extends false ? K : never }[keyof T];
+export type NotCompositeKeys<T> = { [K in keyof T]: isCompositePrototypeType<T[K]> extends false ? K : never }[keyof T] & KEYS<T>;
 
 //...
 
 export type CompositeSteps<T extends object, K extends CompositeKeys<T>> = T[K] extends IUnitCompositePrototype<any> ? T[K]["steps"] : never;
 
-export type CompositeUnitsArray<T extends object, K extends CompositeKeys<T>> = {
-	[I in keyof CompositeSteps<T, K>]: KEYS<CompositeSteps<T, K>[I]["def"]["__type_config"]>;
+type StepUnitKeys<Steps extends readonly IUnitCompositeStep<any>[]> = {
+	[I in keyof Steps]: Steps[I] extends IUnitCompositeStep<infer Definition> ? NotCompositeKeys<Definition["__type_config"]> : never;
 };
 
-// Кортеж для композита: [KeyComposite, [...CompositeUnitsArray]]
-// TypeScript тащил ключами методы массива, ни один способ починки не прокатил. Но у них было значение never и NeverKeysFilterType фильтрация спасла
-export type CompositeArgs<T extends object, K extends CompositeKeys<T> = CompositeKeys<T>> = [K, NeverKeysFilterType<CompositeUnitsArray<T, K>>];
+export type CompositeUnitsArray<T extends object, K extends CompositeKeys<T>> = StepUnitKeys<CompositeSteps<T, K>>;
 
-// Объединенный тип аргумента: либо простой ключ, либо кортеж композита
+// Homomorphic tuple mapping preserves exact arity as well as literal member keys.
+export type CompositeArgs<T extends object, K extends CompositeKeys<T> = CompositeKeys<T>> = K extends CompositeKeys<T> ? [K, CompositeUnitsArray<T, K>] : never;
+
+// A scalar key or a typed composite tuple.
 export type IUnit<T extends object> = NotCompositeKeys<T> | CompositeArgs<T>;
 
 export interface IUnitD<U extends AnyUnitDefinition> {
@@ -53,24 +56,7 @@ export interface IUnitD<U extends AnyUnitDefinition> {
 	cursor: U["__type_cursor"];
 }
 
-/*
- * Определение системы единиц измерения.
- *
- * @remarks
- * **Почему `Config extends object`, а не `Config extends Record<string, IUnitPrototype>`?**
- * При использовании `Record` ломается вывод конкретных ключей — TypeScript расширяет тип до `string`,
- * теряя все литеральные ключи.
- *
- * @example
- * ```typescript
- * const LengthUnits = {
- *   m:  scalar({ name: "Meters", short: "m" }),
- *   km: scalar({ name: "Kilometers", short: "km" }, 1000),
- * } satisfies Record<string, IUnitScalarPrototype>;
- *
- * export const LengthSI = new UnitDefinition("length", LengthUnits, "m", "m");
- * ```
- */
+/* A named unit system. Config extends object to preserve literal-key inference. Use satisfies Record<string, IUnitScalarPrototype> for scalar definitions. The constructor takes name, config, canonical key, default unit and display tag. */
 export class UnitDefinition<Name extends string, Config extends object> {
 	readonly name: Name;
 	readonly config: Config;
@@ -100,17 +86,7 @@ export class UnitDefinition<Name extends string, Config extends object> {
 		return this.ptps.get(key) as Config[K];
 	}
 
-	/*
-	 * Конвертирует значение между двумя единицами данной системы.
-	 *
-	 *
-	 * @example
-	 * ```typescript
-	 * LengthSI.convert(100, "cm", "m");           // 1
-	 * SpeedSI.convert(1, ["L/T", ["km", "h"]], ["L/T", ["m", "s"]]); // 0.2777...
-	 * EnergySI.convert(1, ["P*t", ["kW", "h"]], "J"); // 3_600_000
-	 * ```
-	 */
+	/* Convert a number from one scalar or composite unit to another within this system. Composite tuples supply one member key per configured step. */
 	convert<A extends IUnit<Config>, B extends IUnit<Config>>(v: number, a: A, b: B): number {
 		let parrots = v;
 
@@ -118,7 +94,7 @@ export class UnitDefinition<Name extends string, Config extends object> {
 			const ptp = this.getPrototype(a[0] as KEYS<Config>) as IUnitCompositePrototype;
 			const keys = a[1] as string[];
 			if (keys.length !== ptp.steps.length) throw new TypeError("Composite unit arity mismatch");
-			for (let i = ptp.steps.length - 1; i >= 0; i--) {
+			for (let i = 0; i < ptp.steps.length; i++) {
 				const step = ptp.steps[i];
 				const key = keys[i];
 				if (!step || key === undefined) throw new TypeError("Composite unit arity mismatch");
@@ -132,7 +108,7 @@ export class UnitDefinition<Name extends string, Config extends object> {
 			const ptp = this.getPrototype(b[0] as KEYS<Config>) as IUnitCompositePrototype;
 			const keys = b[1] as string[];
 			if (keys.length !== ptp.steps.length) throw new TypeError("Composite unit arity mismatch");
-			for (let i = 0; i < ptp.steps.length; i++) {
+			for (let i = ptp.steps.length - 1; i >= 0; i--) {
 				const step = ptp.steps[i];
 				const key = keys[i];
 				if (!step || key === undefined) throw new TypeError("Composite unit arity mismatch");

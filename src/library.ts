@@ -1,15 +1,4 @@
-/**
- * Библиотека готовых систем единиц измерения (СИ-ориентированных).
- *
- * Каждая система определяется как `UnitDefinition` + сопутствующий тип `IUnitD<typeof ...>`.
- *
- * @remarks
- * Конструкция типа `satisfies Record<string, IUnitScalarPrototype>` или `as IUnitCompositePrototype<[IUnitCompositeStep<typeof X>, ...]>`,
- * используются **намеренно**. Без этого TypeScript теряет точные ключи и все цепочки типов `CompositeArgs / IUnit` разваливаются.
- *
- * @see UnitDefinition
- * @see IUnit
- */
+/** Built-in scalar, affine and composite systems. Explicit step tuples preserve literal-key inference. */
 
 import type { IUnitCompositePrototype, IUnitCompositeStep, IUnitD, IUnitScalarPrototype } from "./definition.js";
 import { UnitDefinition } from "./definition.js";
@@ -27,7 +16,7 @@ const QuantityUnits = {
 export const QuantitySI = new UnitDefinition("quantity", QuantityUnits, "q", "q", "Items");
 export type QuantityD = IUnitD<typeof QuantitySI>;
 
-// --- Время (с) ---
+// --- Time (seconds) ---
 const TimeUnits = {
 	y: scalar({ name: "Years (365 days)", short: "yr" }, 31_536_000),
 	mo: scalar({ name: "Months (30 days)", short: "mo" }, 2_592_000),
@@ -43,7 +32,7 @@ const TimeUnits = {
 export const TimeSI = new UnitDefinition("time", TimeUnits, "s", "min", "Time");
 export type TimeD = IUnitD<typeof TimeSI>;
 
-// --- Масса (кг) ---
+// --- Mass (kilograms) ---
 const MassUnits = {
 	kt: scalar({ name: "Kilotons", short: "kt" }, 1_000_000),
 	t: scalar({ name: "Metric tons", short: "t" }, 1_000),
@@ -59,7 +48,7 @@ const MassUnits = {
 export const MassSI = new UnitDefinition("mass", MassUnits, "kg", "kg", "Mass");
 export type MassD = IUnitD<typeof MassSI>;
 
-// --- Длина (м) ---
+// --- Length (meters) ---
 const LengthUnits = {
 	km: scalar({ name: "Kilometers", short: "km" }, 1_000),
 	m: scalar({ name: "Meters", short: "m" }),
@@ -76,7 +65,7 @@ const LengthUnits = {
 export const LengthSI = new UnitDefinition("length", LengthUnits, "m", "m", "Length");
 export type LengthD = IUnitD<typeof LengthSI>;
 
-// --- Температура (Кельвин) ---
+// --- Temperature (Kelvin) ---
 const TemperatureUnits = {
 	K: scalar({ name: "Kelvin", short: "K" }),
 	C: { name: "Celsius", short: "°C", from: (v) => v - 273.15, to: (v) => v + 273.15 },
@@ -85,7 +74,7 @@ const TemperatureUnits = {
 export const TemperatureSI = new UnitDefinition("temperature", TemperatureUnits, "K", "C", "Temperature");
 export type TemperatureD = IUnitD<typeof TemperatureSI>;
 
-// --- Площадь (м²) ---
+// --- Area (square meters) ---
 const AreaUnits = {
 	km2: scalar({ name: "Square kilometers", short: "km²" }, 1e6),
 	h: scalar({ name: "Hectares", short: "ha" }, 10_000),
@@ -100,7 +89,7 @@ const AreaUnits = {
 export const AreaSI = new UnitDefinition("area", AreaUnits, "m2", "m2", "Area");
 export type AreaD = IUnitD<typeof AreaSI>;
 
-// --- Объём (м³) ---
+// --- Volume (cubic meters) ---
 const VolumeUnits = {
 	km3: scalar({ name: "Cubic kilometers", short: "km³" }, 1e9),
 	m3: scalar({ name: "Cubic meters", short: "m³" }),
@@ -116,7 +105,7 @@ const VolumeUnits = {
 export const VolumeSI = new UnitDefinition("volume", VolumeUnits, "m3", "dm3", "Volume");
 export type VolumeD = IUnitD<typeof VolumeSI>;
 
-// --- Сила тока (А) ---
+// --- Electric current (amperes) ---
 const ElectricCurrentUnits = {
 	MA: scalar({ name: "Megaamperes", short: "MA" }, 1_000_000),
 	kA: scalar({ name: "Kiloamperes", short: "kA" }, 1_000),
@@ -127,7 +116,7 @@ const ElectricCurrentUnits = {
 export const ElectricCurrentSI = new UnitDefinition("electric-current", ElectricCurrentUnits, "A", "A", "Electric Current");
 export type ElectricCurrentD = IUnitD<typeof ElectricCurrentSI>;
 
-// --- Напряжение (В) ---
+// --- Voltage (volts) ---
 const ElectricVoltageUnits = {
 	MV: scalar({ name: "Megavolts", short: "MV" }, 1_000_000),
 	kV: scalar({ name: "Kilovolts", short: "kV" }, 1_000),
@@ -138,7 +127,7 @@ const ElectricVoltageUnits = {
 export const ElectricVoltageSI = new UnitDefinition("electric-voltage", ElectricVoltageUnits, "V", "V", "Electric Voltage");
 export type ElectricVoltageD = IUnitD<typeof ElectricVoltageSI>;
 
-// --- Сопротивление (Ом) ---
+// --- Resistance (ohms) ---
 const ElectricResistanceUnits = {
 	TOhm: scalar({ name: "Teraohms", short: "TΩ" }, 1e12),
 	GOhm: scalar({ name: "Gigaohms", short: "GΩ" }, 1e9),
@@ -151,7 +140,7 @@ const ElectricResistanceUnits = {
 export const ElectricResistanceSI = new UnitDefinition("electric-resistance", ElectricResistanceUnits, "Ohm", "Ohm", "Electric Resistance");
 export type ElectricResistanceD = IUnitD<typeof ElectricResistanceSI>;
 
-// --- Емкость (Фарад) ---
+// --- Capacitance (farads) ---
 const ElectricCapacitanceUnits = {
 	F: scalar({ name: "Farads", short: "F" }),
 	mF: scalar({ name: "Millifarads", short: "mF" }, 0.001),
@@ -162,7 +151,7 @@ const ElectricCapacitanceUnits = {
 export const ElectricCapacitanceSI = new UnitDefinition("electric-capacitance", ElectricCapacitanceUnits, "F", "uF", "Electric Capacitance");
 export type ElectricCapacitanceD = IUnitD<typeof ElectricCapacitanceSI>;
 
-// --- Заряд (Кулон) ---
+// --- Charge (coulombs) ---
 const ElectricChargeUnits = {
 	C: scalar({ name: "Coulombs", short: "C" }),
 	kC: scalar({ name: "Kilocoulombs", short: "kC" }, 1_000),
@@ -177,7 +166,7 @@ const ElectricChargeUnits = {
 export const ElectricChargeSI = new UnitDefinition("electric-charge", ElectricChargeUnits, "C", ["A*t", ["mA", "h"]], "Electric Charge");
 export type ElectricChargeD = IUnitD<typeof ElectricChargeSI>;
 
-// --- Мощность (Вт) ---
+// --- Power (watts) ---
 const PowerUnits = {
 	TW: scalar({ name: "Terawatts", short: "TW" }, 1e12),
 	GW: scalar({ name: "Gigawatts", short: "GW" }, 1e9),
@@ -197,7 +186,7 @@ const PowerUnits = {
 export const PowerSI = new UnitDefinition("power", PowerUnits, "W", "kW", "Power");
 export type PowerD = IUnitD<typeof PowerSI>;
 
-// --- Данные / Информация (Байт) ---
+// --- Data (bytes) ---
 const DataUnits = {
 	B: scalar({ name: "Bytes", short: "B" }),
 	KB: scalar({ name: "Kibibytes", short: "KiB" }, 1024),
@@ -213,7 +202,7 @@ const DataUnits = {
 export const DataSI = new UnitDefinition("data", DataUnits, "B", "MB", "Data");
 export type DataD = IUnitD<typeof DataSI>;
 
-// --- Угол (Радиан) ---
+// --- Angle (radians) ---
 const AngleUnits = {
 	rad: scalar({ name: "Radians", short: "rad" }),
 	deg: scalar({ name: "Degrees", short: "°" }, Math.PI / 180),
@@ -223,7 +212,7 @@ const AngleUnits = {
 export const AngleSI = new UnitDefinition("angle", AngleUnits, "rad", "deg", "Angle");
 export type AngleD = IUnitD<typeof AngleSI>;
 
-// --- Давление (Па) ---
+// --- Pressure (pascals) ---
 const PressureUnits = {
 	GPa: scalar({ name: "Gigapascals", short: "GPa" }, 1e9),
 	MPa: scalar({ name: "Megapascals", short: "MPa" }, 1e6),
@@ -239,10 +228,10 @@ export const PressureSI = new UnitDefinition("pressure", PressureUnits, "Pa", "k
 export type PressureD = IUnitD<typeof PressureSI>;
 
 // ============================================================================
-// СОСТАВНЫЕ СИСТЕМЫ (COMPOSITE SYSTEMS)
+// COMPOSITE SYSTEMS
 // ============================================================================
 
-// --- Энергия (Джоуль) ---
+// --- Energy (joules) ---
 const EnergyUnits = {
 	"P*t": {
 		steps: [parrot(PowerSI), multi(TimeSI)],
@@ -258,7 +247,7 @@ const EnergyUnits = {
 export const EnergySI = new UnitDefinition("energy", EnergyUnits, "J", ["P*t", ["kW", "h"]], "Energy");
 export type EnergyD = IUnitD<typeof EnergySI>;
 
-// --- Скорость (м/с) ---
+// --- Speed (meters per second) ---
 const SpeedUnits = {
 	"L/T": {
 		steps: [parrot(LengthSI), div(TimeSI)],
@@ -267,7 +256,7 @@ const SpeedUnits = {
 export const SpeedSI = new UnitDefinition("speed", SpeedUnits, "L/T", ["L/T", ["km", "h"]], "Speed");
 export type SpeedD = IUnitD<typeof SpeedSI>;
 
-// --- Расход Топлива (м³/м) ---
+// --- Fuel consumption (cubic meters per meter) ---
 const FuelConsumptionUnits = {
 	"V/L": {
 		steps: [parrot(VolumeSI), div(LengthSI)],
@@ -282,7 +271,7 @@ const FuelConsumptionUnits = {
 export const FuelConsumptionSI = new UnitDefinition("fuel-consumption", FuelConsumptionUnits, "V/L", ["V/L", ["dm3", "km"]], "Fuel Consumption");
 export type FuelConsumptionD = IUnitD<typeof FuelConsumptionSI>;
 
-// --- Плотность (кг/м³) ---
+// --- Density (kilograms per cubic meter) ---
 const DensityUnits = {
 	"m/V": {
 		steps: [parrot(MassSI), div(VolumeSI)],
@@ -291,7 +280,7 @@ const DensityUnits = {
 export const DensitySI = new UnitDefinition("density", DensityUnits, "m/V", ["m/V", ["kg", "m3"]], "Density");
 export type DensityD = IUnitD<typeof DensitySI>;
 
-// --- Скорость передачи данных (Байт/с) ---
+// --- Data rate (bytes per second) ---
 const DataRateUnits = {
 	"B/t": {
 		steps: [parrot(DataSI), div(TimeSI)],
