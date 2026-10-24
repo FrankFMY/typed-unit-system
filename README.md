@@ -93,19 +93,29 @@ const CurrencySI = new UnitDefinition(
 );
 ```
 
+## Type and runtime boundaries
+
+Unit keys, system cursors and exact composite tuple members/arity are checked at compile time. The carrier step is converted to canonical units before linear ratio steps are applied (and operations are inverted in reverse order), so dBm-as-power energy conversions work. Composite multiplication/division helpers require ratio-compatible units for their factor steps; do not use an affine/logarithmic factor as if it were a linear scale. JavaScript inputs and persisted cursors still need caller validation. This is not symbolic dimensional algebra or a parser for arbitrary unit strings; a numeric result is not branded with a dimension. Custom conversion functions and definitions are trusted configuration.
+
 ## Precision and calendar boundaries
 
 Conversions use JavaScript `number`. Fixed-duration year and month units represent 365 days and 30 days respectively; they are duration conveniences, not calendar arithmetic. Applications requiring decimal-money guarantees, leap-aware dates, or uncertainty propagation should layer those rules above this package.
 
+## Composite helper contracts
+
+`parrot`, `multi` and `div` normalize scalar members against the system's canonical pivot, including systems such as fuel consumption whose canonical label is composite. Implicit normalization never passes nested composite tuples into scalar-only custom callbacks. An explicit normalization override accepts a scalar key or a fully specified composite tuple. Each member in a parent composite still names a scalar unit from that step's system: a bare composite name is not a usable member.
+
+For custom composites, retain a tuple type with `IUnitCompositePrototype<[IUnitCompositeStep<typeof FirstSystem>, IUnitCompositeStep<typeof SecondSystem>]>`; a widened array cannot retain per-position keys and arity. Runtime conversion also checks arity. The first step carries the value (including supported affine/nonlinear conversion); later multiply/divide factors must be linear ratios. This is registered-unit safety, not a proof of physical dimensional consistency.
+
 ## Package status
 
-The package is published on npm from immutable Git tags. Future releases use npm Trusted Publishing.
+Registry installation is available when the desired version has been published. [npm package](https://www.npmjs.com/package/@frankfmy/typed-unit-system) · [source](https://github.com/FrankFMY/typed-unit-system). ESM on Node.js 20+ or Bun 1.4+; conversion code has no platform dependencies.
 
 ```bash
 npm install @frankfmy/typed-unit-system
 ```
 
-The first npm version is bootstrapped once from its clean exact tag with interactive account 2FA using `scripts/bootstrap-first-npm-release.sh`; subsequent releases use the repository's OIDC trusted publisher.
+Until approval, clone this repository, run `bun install --frozen-lockfile && bun run build`, then `npm pack` and install that tarball. Automatic release-triggered registry publication is not enabled.
 
 ## Development
 
@@ -120,7 +130,11 @@ bun run verify
 
 - GitHub: https://github.com/FrankFMY
 - Website: https://frankfmy.com
-- Email: Pryanishnikovartem@gmail.com
+- Email: Pryanishnikovartem@gmail.com · frankfmy@proton.me
+- Telegram: https://t.me/FrankFMY
+- LinkedIn: https://www.linkedin.com/in/frankfmy/
+- X: https://x.com/FrankFMY
+- npm: https://www.npmjs.com/~frankfmy
 
 ## License
 

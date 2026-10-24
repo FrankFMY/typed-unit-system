@@ -1,6 +1,6 @@
 {
   "name": "@frankfmy/typed-unit-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Type-safe scalar and composite unit conversions for TypeScript.",
   "type": "module",
   "sideEffects": false,
@@ -39,7 +39,7 @@
     "url": "https://frankfmy.com"
   },
   "license": "MIT",
-  "homepage": "https://frankfmy.com",
+  "homepage": "https://github.com/FrankFMY/typed-unit-system#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FrankFMY/typed-unit-system.git"
